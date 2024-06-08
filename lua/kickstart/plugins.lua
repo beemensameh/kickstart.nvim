@@ -121,10 +121,9 @@ require('lazy').setup({
   },
   { -- LSP
     {
-      'VonHeikemen/lsp-zero.nvim',
-      branch = 'v3.x',
+      'neovim/nvim-lspconfig',
+      version = '*',
       dependencies = {
-        {'neovim/nvim-lspconfig', version = '*'},
         'williamboman/mason.nvim',
         'williamboman/mason-lspconfig.nvim',
         'WhoIsSethDaniel/mason-tool-installer.nvim',
@@ -134,23 +133,44 @@ require('lazy').setup({
         'L3MON4D3/LuaSnip',
       },
       config = function()
-        local lsp_zero = require('lsp-zero')
-        lsp_zero.on_attach(function(client, bufnr)
-          lsp_zero.default_keymaps({buffer = bufnr})
-        end)
+        local capabilities = vim.lsp.protocol.make_client_capabilities()
+        capabilities = vim.tbl_deep_extend('force', capabilities, require('cmp_nvim_lsp').default_capabilities())
+        local servers = {
+          gopls = {
+            -- cmd = { "gopls" },
+            -- filetypes = { "go", "gomod", "gowork", "gotmpl" },
+            -- root_dir = require("lspconfig.util").root_pattern("go.work", "go.mod", ".git"),
+            settings = {
+              gopls = {
+                -- gofumpt = true,
+                completeUnimported = true,
+                usePlaceholders = true,
+                analyses = {
+                  unusedparams = true,
+                },
+              },
+            },
+          },
+        }
 
         require('mason').setup({})
+
+        local ensure_installed = vim.tbl_keys(servers or {})
+        vim.list_extend(ensure_installed, {'gopls', 'pylsp'})
+        require('mason-tool-installer').setup { ensure_installed = ensure_installed }
+
         require('mason-lspconfig').setup({
-          ensure_installed = {'gopls', 'pylsp'},
           handlers = {
-            lsp_zero.default_setup,
             function(server_name)
-              require('lspconfig')[server_name].setup({})
+              local server = servers[server_name] or {}
+              -- This handles overriding only values explicitly passed
+              -- by the server configuration above. Useful when disabling
+              -- certain features of an LSP (for example, turning off formatting for tsserver)
+              server.capabilities = vim.tbl_deep_extend('force', {}, capabilities, server.capabilities or {})
+              require('lspconfig')[server_name].setup(server)
             end,
           },
         })
-
-        require('mason-tool-installer').setup { ensure_installed = ensure_installed }
         
         local cmp = require('cmp')
         cmp.setup({
