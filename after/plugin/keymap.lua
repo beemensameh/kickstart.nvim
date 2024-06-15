@@ -1,11 +1,12 @@
 -- [[ native keymap (remap) ]]
--- vim.keymap.set('n', '<leader>:e', vim.cmd.Ex, { desc = 'Back to explorer' })
+vim.keymap.set('n', '<leader>e', vim.cmd.Ex, { desc = 'Back to explorer' })
 
 -- [[ which-key.nvim ]]
 -- Document existing key chains
-local has_which_key,which_key = pcall(require,"which-key")
+local has_which_key,which_key = pcall(require, "which-key")
 if has_which_key then
   which_key.register {
+    ['<leader>l'] = { name = '[L]azy', _ = 'which_key_ignore' },
     ['<leader>c'] = { name = '[C]ode', _ = 'which_key_ignore' },
     ['<leader>d'] = { name = '[D]ocument', _ = 'which_key_ignore' },
     ['<leader>r'] = { name = '[R]ename', _ = 'which_key_ignore' },
@@ -18,6 +19,16 @@ if has_which_key then
   which_key.register({
     ['<leader>h'] = { name = 'Git [H]unk' },
   }, { mode = 'v'})
+end
+
+-- [[ Lazy ]]
+local has_lazy,lazy = pcall(require, 'lazy')
+if has_lazy then
+  vim.keymap.set('n', '<leader>ls', lazy.home, { desc = '[L]azy [H]ome' })
+  vim.keymap.set('n', '<leader>lk', lazy.check, { desc = '[L]azy Chec[k]' })
+  vim.keymap.set('n', '<leader>lc', lazy.clean, { desc = '[L]azy [C]lean' })
+  vim.keymap.set('n', '<leader>ls', lazy.sync, { desc = '[L]azy [S]ync' })
+  vim.keymap.set('n', '<leader>lu', lazy.sync, { desc = '[L]azy [U]pdate' })
 end
 
 -- [[ telescope.nvim' ]]
@@ -64,10 +75,8 @@ if has_telescope then
   end, { desc = '[S]earch [N]eovim files' })
 end
 
-local has_lsp_zero,lsp_zero = pcall(require, 'lsp-zero')
-
-if has_lsp_zero then
-  
-end
+-- for i, v in pairs(package.loaded) do
+--   print(i)
+-- end
 
 -- vim: ts=2 sts=2 sw=2 et
