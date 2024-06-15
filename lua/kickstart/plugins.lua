@@ -20,7 +20,7 @@ vim.opt.rtp:prepend(lazypath)
 -- NOTE: Here is where you install your plugins.
 require('lazy').setup({
   {   -- Useful plugin to show you pending keybinds.
-    'folke/which-key.nvim', version = '*', event = 'VimEnter',
+    'folke/which-key.nvim', version = '2.*', event = 'VimEnter',
   },
   {   -- Fuzzy Finder (files, lsp, etc)
     'nvim-telescope/telescope.nvim',
@@ -32,7 +32,8 @@ require('lazy').setup({
     },
   },
   {   -- Collection of various small independent plugins/modules
-    'echasnovski/mini.nvim', version = '*',
+    'echasnovski/mini.nvim',
+    version = '*',
     config = function()
       -- Better Around/Inside textobjects
       --
@@ -68,15 +69,17 @@ require('lazy').setup({
       --  Check out: https://github.com/echasnovski/mini.nvim
     end,
   },
+  { 'folke/neoconf.nvim', enabled = false, opts = {} },
 
   'tpope/vim-sleuth',   -- Detect tabstop and shiftwidth automatically
   { 'numToStr/Comment.nvim', event = 'VimEnter', opts = {} },
-  { 'folke/todo-comments.nvim', version = '*', event = 'VimEnter', dependencies = { 'nvim-lua/plenary.nvim' }, opts = { signs = false } },
+  { 'folke/todo-comments.nvim', enabled = false, version = '*', event = 'VimEnter', dependencies = { 'nvim-lua/plenary.nvim' }, opts = { signs = false } },
   {   -- Highlight, edit, and navigate code
     'nvim-treesitter/nvim-treesitter',
+    event = 'VimEnter',
     build = ':TSUpdate',
     opts = {
-      ensure_installed = { 'bash', 'html', 'lua', 'markdown', 'go', 'python' },
+      ensure_installed = { 'bash', 'html', 'lua', 'markdown', 'go', 'python', 'json', 'jsonc' },
       -- Autoinstall languages that are not installed
       auto_install = true,
       highlight = {
@@ -113,122 +116,119 @@ require('lazy').setup({
   },
   { -- Undo/Redo tree
     "mbbill/undotree",
-    enabled = true,
-    event = 'VimEnter',
     config = function ()
       vim.keymap.set('n', '<leader>tu', vim.cmd.UndotreeToggle, { desc = '[T]oggle [U]ndotree' })
     end
   },
   { -- LSP
-    {
-      'neovim/nvim-lspconfig',
-      version = '*',
-      dependencies = {
-        'williamboman/mason.nvim',
-        'williamboman/mason-lspconfig.nvim',
-        'WhoIsSethDaniel/mason-tool-installer.nvim',
-        { 'j-hui/fidget.nvim', opts = {} },
-        'hrsh7th/cmp-nvim-lsp',
-        'hrsh7th/nvim-cmp',
-        'L3MON4D3/LuaSnip',
-      },
-      config = function()
-        local capabilities = vim.lsp.protocol.make_client_capabilities()
-        capabilities = vim.tbl_deep_extend('force', capabilities, require('cmp_nvim_lsp').default_capabilities())
-        local servers = {
-          gopls = {
-            -- cmd = { "gopls" },
-            -- filetypes = { "go", "gomod", "gowork", "gotmpl" },
-            -- root_dir = require("lspconfig.util").root_pattern("go.work", "go.mod", ".git"),
-            settings = {
-              gopls = {
-                -- gofumpt = true,
-                completeUnimported = true,
-                usePlaceholders = true,
-                analyses = {
-                  unusedparams = true,
-                },
+    'neovim/nvim-lspconfig',
+    event = 'VimEnter',
+    version = '*',
+    dependencies = {
+      'williamboman/mason.nvim',
+      'williamboman/mason-lspconfig.nvim',
+      'WhoIsSethDaniel/mason-tool-installer.nvim',
+      { 'j-hui/fidget.nvim', opts = {} },
+      'hrsh7th/cmp-nvim-lsp',
+      'hrsh7th/nvim-cmp',
+      'L3MON4D3/LuaSnip',
+    },
+    config = function()
+      local capabilities = vim.lsp.protocol.make_client_capabilities()
+      capabilities = vim.tbl_deep_extend('force', capabilities, require('cmp_nvim_lsp').default_capabilities())
+      local servers = {
+        gopls = {
+          -- cmd = { "gopls" },
+          -- filetypes = { "go", "gomod", "gowork", "gotmpl" },
+          -- root_dir = require("lspconfig.util").root_pattern("go.work", "go.mod", ".git"),
+          settings = {
+            gopls = {
+              -- gofumpt = true,
+              completeUnimported = true,
+              usePlaceholders = true,
+              analyses = {
+                unusedparams = true,
               },
             },
           },
-        }
+        },
+      }
 
-        require('mason').setup({})
+      require('mason').setup({})
 
-        local ensure_installed = vim.tbl_keys(servers or {})
-        vim.list_extend(ensure_installed, {'gopls', 'pylsp'})
-        require('mason-tool-installer').setup { ensure_installed = ensure_installed }
+      local ensure_installed = vim.tbl_keys(servers or {})
+      vim.list_extend(ensure_installed, {'gopls'}) -- , 'dockerls', 'docker_compose_language_service'})
+      require('mason-tool-installer').setup { ensure_installed = ensure_installed }
 
-        require('mason-lspconfig').setup({
-          handlers = {
-            function(server_name)
-              local server = servers[server_name] or {}
-              -- This handles overriding only values explicitly passed
-              -- by the server configuration above. Useful when disabling
-              -- certain features of an LSP (for example, turning off formatting for tsserver)
-              server.capabilities = vim.tbl_deep_extend('force', {}, capabilities, server.capabilities or {})
-              require('lspconfig')[server_name].setup(server)
-            end,
-          },
-        })
-        
-        local cmp = require('cmp')
-        cmp.setup({
-          sources = {
-            {name = 'nvim_lsp'},
-          },
-          mapping = {
-            ['<C-y>'] = cmp.mapping.confirm({select = false}),
-            ['<C-e>'] = cmp.mapping.abort(),
-            ['<Up>'] = cmp.mapping.select_prev_item({behavior = 'select'}),
-            ['<Down>'] = cmp.mapping.select_next_item({behavior = 'select'}),
-            ['<C-p>'] = cmp.mapping(function()
-              if cmp.visible() then
-                cmp.select_prev_item({behavior = 'insert'})
-              else
-                cmp.complete()
-              end
-            end),
-            ['<C-n>'] = cmp.mapping(function()
-              if cmp.visible() then
-                cmp.select_next_item({behavior = 'insert'})
-              else
-                cmp.complete()
-              end
-            end),
-          },
-          snippet = {
-            expand = function(args)
-              require('luasnip').lsp_expand(args.body)
-            end,
-          },
-        })
+      require('mason-lspconfig').setup({
+        handlers = {
+          function(server_name)
+            local server = servers[server_name] or {}
+            -- This handles overriding only values explicitly passed
+            -- by the server configuration above. Useful when disabling
+            -- certain features of an LSP (for example, turning off formatting for tsserver)
+            server.capabilities = vim.tbl_deep_extend('force', {}, capabilities, server.capabilities or {})
+            require('lspconfig')[server_name].setup(server)
+          end,
+        },
+      })
+      
+      local cmp = require('cmp')
+      cmp.setup({
+        sources = {
+          {name = 'nvim_lsp'},
+        },
+        mapping = {
+          ['<C-y>'] = cmp.mapping.confirm({select = false}),
+          ['<C-e>'] = cmp.mapping.abort(),
+          ['<Up>'] = cmp.mapping.select_prev_item({behavior = 'select'}),
+          ['<Down>'] = cmp.mapping.select_next_item({behavior = 'select'}),
+          ['<C-p>'] = cmp.mapping(function()
+            if cmp.visible() then
+              cmp.select_prev_item({behavior = 'insert'})
+            else
+              cmp.complete()
+            end
+          end),
+          ['<C-n>'] = cmp.mapping(function()
+            if cmp.visible() then
+              cmp.select_next_item({behavior = 'insert'})
+            else
+              cmp.complete()
+            end
+          end),
+        },
+        snippet = {
+          expand = function(args)
+            require('luasnip').lsp_expand(args.body)
+          end,
+        },
+      })
 
-        vim.api.nvim_create_autocmd("BufWritePre", {
-          pattern = "*.go",
-          callback = function()
-            local params = vim.lsp.util.make_range_params()
-            params.context = {only = {"source.organizeImports"}}
-            -- buf_request_sync defaults to a 1000ms timeout. Depending on your
-            -- machine and codebase, you may want longer. Add an additional
-            -- argument after params if you find that you have to write the file
-            -- twice for changes to be saved.
-            -- E.g., vim.lsp.buf_request_sync(0, "textDocument/codeAction", params, 3000)
-            local result = vim.lsp.buf_request_sync(0, "textDocument/codeAction", params)
-            for cid, res in pairs(result or {}) do
-              for _, r in pairs(res.result or {}) do
-                if r.edit then
-                  local enc = (vim.lsp.get_client_by_id(cid) or {}).offset_encoding or "utf-16"
-                  vim.lsp.util.apply_workspace_edit(r.edit, enc)
-                end
+      vim.api.nvim_create_autocmd("BufWritePre", {
+        pattern = "*.go",
+        callback = function()
+          local params = vim.lsp.util.make_range_params()
+          params.context = {only = {"source.organizeImports"}}
+          -- buf_request_sync defaults to a 1000ms timeout. Depending on your
+          -- machine and codebase, you may want longer. Add an additional
+          -- argument after params if you find that you have to write the file
+          -- twice for changes to be saved.
+          -- E.g., vim.lsp.buf_request_sync(0, "textDocument/codeAction", params, 3000)
+          local result = vim.lsp.buf_request_sync(0, "textDocument/codeAction", params)
+          for cid, res in pairs(result or {}) do
+            for _, r in pairs(res.result or {}) do
+              if r.edit then
+                local enc = (vim.lsp.get_client_by_id(cid) or {}).offset_encoding or "utf-16"
+                vim.lsp.util.apply_workspace_edit(r.edit, enc)
               end
             end
-            vim.lsp.buf.format({async = false})
           end
-        })
-      end
-    },
-  }
+          vim.lsp.buf.format({async = false})
+        end
+      })
+    end
+  },
 }, {
     ui = {
       -- If you are using a Nerd Font: set icons to an empty table which will use the
