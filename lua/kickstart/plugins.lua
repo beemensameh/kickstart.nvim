@@ -22,6 +22,13 @@ require('lazy').setup({
   {   -- Useful plugin to show you pending keybinds.
     'folke/which-key.nvim', version = '2.*', event = 'VimEnter',
   },
+  {
+    'goolord/alpha-nvim',
+    dependencies = { 'nvim-tree/nvim-web-devicons' },
+    config = function ()
+      require('alpha').setup(require('alpha.themes.startify').config)
+    end
+  },
   {   -- Fuzzy Finder (files, lsp, etc)
     'nvim-telescope/telescope.nvim',
     event = 'VimEnter',
@@ -70,6 +77,26 @@ require('lazy').setup({
     end,
   },
   { 'folke/neoconf.nvim', enabled = false, opts = {} },
+  {
+    'lewis6991/gitsigns.nvim',
+    opts = {
+      signs = {
+        add = { text = '+' },
+        change = { text = '~' },
+        delete = { text = '_' },
+        topdelete = { text = '‾' },
+        changedelete = { text = '~' },
+      },
+    },
+  },
+  {
+    'chipsenkbeil/distant.nvim', 
+    enabled = false,
+    branch = 'v0.3',
+    config = function()
+        require('distant'):setup()
+    end
+  },
 
   'tpope/vim-sleuth',   -- Detect tabstop and shiftwidth automatically
   { 'numToStr/Comment.nvim', event = 'VimEnter', opts = {} },
@@ -79,7 +106,7 @@ require('lazy').setup({
     event = 'VimEnter',
     build = ':TSUpdate',
     opts = {
-      ensure_installed = { 'bash', 'html', 'lua', 'markdown', 'go', 'python', 'json', 'jsonc' },
+      ensure_installed = { 'bash', 'html', 'lua', 'markdown', 'go', 'python', 'json', 'jsonc', 'tsx' },
       -- Autoinstall languages that are not installed
       auto_install = true,
       highlight = {
@@ -122,7 +149,6 @@ require('lazy').setup({
   },
   { -- LSP
     'neovim/nvim-lspconfig',
-    event = 'VimEnter',
     version = '*',
     dependencies = {
       'williamboman/mason.nvim',
@@ -131,7 +157,6 @@ require('lazy').setup({
       { 'j-hui/fidget.nvim', opts = {} },
       'hrsh7th/cmp-nvim-lsp',
       'hrsh7th/nvim-cmp',
-      'L3MON4D3/LuaSnip',
     },
     config = function()
       local capabilities = vim.lsp.protocol.make_client_capabilities()
@@ -151,13 +176,18 @@ require('lazy').setup({
               },
             },
           },
+          tsserver = {
+            settings = {
+              tsserver = {},
+            },
+          },
         },
       }
 
       require('mason').setup({})
 
       local ensure_installed = vim.tbl_keys(servers or {})
-      vim.list_extend(ensure_installed, {'gopls'}) -- , 'dockerls', 'docker_compose_language_service'})
+      vim.list_extend(ensure_installed, {'gopls', 'tsserver' }) -- , 'dockerls', 'docker_compose_language_service'})
       require('mason-tool-installer').setup { ensure_installed = ensure_installed }
 
       require('mason-lspconfig').setup({

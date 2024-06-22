@@ -24,7 +24,7 @@ end
 -- [[ Lazy ]]
 local has_lazy,lazy = pcall(require, 'lazy')
 if has_lazy then
-  vim.keymap.set('n', '<leader>ls', lazy.home, { desc = '[L]azy [H]ome' })
+  vim.keymap.set('n', '<leader>lh', lazy.home, { desc = '[L]azy [H]ome' })
   vim.keymap.set('n', '<leader>lk', lazy.check, { desc = '[L]azy Chec[k]' })
   vim.keymap.set('n', '<leader>lc', lazy.clean, { desc = '[L]azy [C]lean' })
   vim.keymap.set('n', '<leader>ls', lazy.sync, { desc = '[L]azy [S]ync' })
@@ -75,6 +75,7 @@ if has_telescope then
   end, { desc = '[S]earch [N]eovim files' })
 end
 
+-- check all loaded packages
 -- for i, v in pairs(package.loaded) do
 --   print(i)
 -- end
