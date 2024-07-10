@@ -3,7 +3,7 @@
 local lazypath = vim.fn.stdpath('data') .. '/lazy/lazy.nvim'
 if not (vim.uv or vim.loop).fs_stat(lazypath) then
   local lazyrepo = 'https://github.com/folke/lazy.nvim.git'
-  vim.fn.system { 'git', 'clone', '--depth=1', '--filter=blob:none', '--branch=stable', lazyrepo, lazypath }
+  vim.fn.system { 'git', 'clone', '--filter=blob:none', '--branch=stable', lazyrepo, lazypath }
 end
 vim.opt.rtp:prepend(lazypath)
 
@@ -90,15 +90,15 @@ require('lazy').setup({
     },
   },
   {
-    'chipsenkbeil/distant.nvim', 
+    'chipsenkbeil/distant.nvim',
     enabled = false,
     branch = 'v0.3',
     config = function()
         require('distant'):setup()
     end
   },
-
   'tpope/vim-sleuth',   -- Detect tabstop and shiftwidth automatically
+
   { 'numToStr/Comment.nvim', event = 'VimEnter', opts = {} },
   { 'folke/todo-comments.nvim', enabled = false, version = '*', event = 'VimEnter', dependencies = { 'nvim-lua/plenary.nvim' }, opts = { signs = false } },
   {   -- Highlight, edit, and navigate code
@@ -106,7 +106,7 @@ require('lazy').setup({
     event = 'VimEnter',
     build = ':TSUpdate',
     opts = {
-      ensure_installed = { 'bash', 'html', 'lua', 'markdown', 'go', 'python', 'json', 'jsonc', 'tsx' },
+      ensure_installed = { 'bash', 'html', 'lua', 'markdown', 'go', 'python', 'json', 'jsonc', 'dockerfile', 'yaml' }, --, 'tsx' },
       -- Autoinstall languages that are not installed
       auto_install = true,
       highlight = {
@@ -176,18 +176,13 @@ require('lazy').setup({
               },
             },
           },
-          tsserver = {
-            settings = {
-              tsserver = {},
-            },
-          },
         },
       }
 
       require('mason').setup({})
 
       local ensure_installed = vim.tbl_keys(servers or {})
-      vim.list_extend(ensure_installed, {'gopls', 'tsserver' }) -- , 'dockerls', 'docker_compose_language_service'})
+      vim.list_extend(ensure_installed, { 'tsserver', 'pyright' }) -- , 'dockerls', 'docker_compose_language_service'})
       require('mason-tool-installer').setup { ensure_installed = ensure_installed }
 
       require('mason-lspconfig').setup({
@@ -202,7 +197,6 @@ require('lazy').setup({
           end,
         },
       })
-      
       local cmp = require('cmp')
       cmp.setup({
         sources = {
