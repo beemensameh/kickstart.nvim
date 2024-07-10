@@ -25,8 +25,8 @@ end
 local has_lazy,lazy = pcall(require, 'lazy')
 if has_lazy then
   vim.keymap.set('n', '<leader>lh', lazy.home, { desc = '[L]azy [H]ome' })
-  vim.keymap.set('n', '<leader>lk', lazy.check, { desc = '[L]azy Chec[k]' })
-  vim.keymap.set('n', '<leader>lc', lazy.clean, { desc = '[L]azy [C]lean' })
+  vim.keymap.set('n', '<leader>lc', lazy.check, { desc = '[L]azy [C]heck' })
+  vim.keymap.set('n', '<leader>lx', lazy.clean, { desc = '[L]azy Clean [X]' })
   vim.keymap.set('n', '<leader>ls', lazy.sync, { desc = '[L]azy [S]ync' })
   vim.keymap.set('n', '<leader>lu', lazy.sync, { desc = '[L]azy [U]pdate' })
 end
