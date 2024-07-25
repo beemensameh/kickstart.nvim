@@ -106,7 +106,7 @@ require('lazy').setup({
     event = 'VimEnter',
     build = ':TSUpdate',
     opts = {
-      ensure_installed = { 'bash', 'html', 'lua', 'markdown', 'go', 'python', 'json', 'jsonc', 'dockerfile', 'yaml' }, --, 'tsx' },
+      ensure_installed = { 'bash', 'html', 'lua', 'markdown', 'make', 'go', 'gomod', 'gosum', 'gotmpl', 'gowork', 'python', 'json', 'jsonc', 'dockerfile', 'yaml', 'query' }, --, 'tsx' },
       -- Autoinstall languages that are not installed
       auto_install = true,
       highlight = {
@@ -221,11 +221,6 @@ require('lazy').setup({
               cmp.complete()
             end
           end),
-        },
-        snippet = {
-          expand = function(args)
-            require('luasnip').lsp_expand(args.body)
-          end,
         },
       })
 
