@@ -105,7 +105,7 @@ require('lazy').setup({
       require('mini.move').setup()
       local statusline = require 'mini.statusline'
       statusline.setup { use_icons = vim.g.have_nerd_font }
-      -- require('mini.git').setup()
+      require('mini.git').setup()
     end,
   },
   {
