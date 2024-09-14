@@ -415,7 +415,22 @@ require('lazy').setup({
       'nvim-treesitter/nvim-treesitter-context',
     },
     opts = {
-      ensure_installed = { 'bash', 'html', 'lua', 'markdown', 'make', 'go', 'gomod', 'gosum', 'gotmpl', 'gowork', 'python', 'json', 'jsonc', 'dockerfile', 'xml', 'yaml', 'query' }, --, 'tsx' },
+      ensure_installed = {
+        'bash',
+        'make',
+        'editorconfig',
+        'html',
+        'lua',
+        'markdown',
+        'go', 'gomod', 'gosum', 'gotmpl', 'gowork',
+        'python',
+        'json', 'jsonc',
+        'yaml',
+        'dockerfile',
+        'xml',
+        'query',
+        'gitignore',
+      },
       auto_install = true,
       highlight = {
         enable = true,
