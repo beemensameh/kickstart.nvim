@@ -85,13 +85,20 @@ vim.keymap.set('n', '<leader>lu', require('lazy').sync, { desc = '[L]azy [U]pdat
 
 require('lazy').setup({
   {
+    'goolord/alpha-nvim',
+    lazy = false,
+    dependencies = { 'nvim-tree/nvim-web-devicons' },
+    config = function ()
+      require'alpha'.setup(require'alpha.themes.startify'.config)
+    end
+  },
+  {
     'echasnovski/mini.nvim',
     version = '*',
     lazy = false,
     config = function()
       require('mini.ai').setup({ n_lines = 500 })
       require('mini.surround').setup()
-      require('mini.starter').setup()
       require('mini.pairs').setup()
       require('mini.move').setup()
       local statusline = require 'mini.statusline'
