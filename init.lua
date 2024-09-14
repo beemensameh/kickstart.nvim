@@ -193,6 +193,13 @@ require('lazy').setup({
     end,
   },
   {
+    "L3MON4D3/LuaSnip",
+    event = "BufReadPost",
+    version = "v2.*",
+    -- install jsregexp (optional!).
+    -- build = "make install_jsregexp"
+  },
+  {
     'neovim/nvim-lspconfig',
     -- event = "BufReadPost",
     lazy = false,
@@ -352,6 +359,11 @@ require('lazy').setup({
           },
           { name = 'nvim_lsp' },
           { name = 'path' },
+        },
+        snippet = {
+          expand = function(args)
+            require('luasnip').lsp_expand(args.body)
+          end,
         },
       }
     end,
