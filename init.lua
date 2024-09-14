@@ -134,7 +134,6 @@ require('lazy').setup({
   },
   {
     'lewis6991/gitsigns.nvim',
-    lazy = false,
     version = '*',
     event = "BufReadPost",
     opts = {
@@ -205,6 +204,7 @@ require('lazy').setup({
   {
     'neovim/nvim-lspconfig',
     -- event = "BufReadPost",
+    enabled = false,
     lazy = false,
     -- ft = { "go", "python" },
     version = "*",
@@ -434,7 +434,7 @@ require('lazy').setup({
     end
   },
 }, {
-    defaults = { lazy = false },
+    defaults = { lazy = true },
     ui = {
       icons = vim.g.have_nerd_font and {} or {
         cmd = '⌘',
