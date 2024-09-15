@@ -227,11 +227,51 @@ require('lazy').setup({
     -- build = "make install_jsregexp"
   },
   {
+    'hrsh7th/nvim-cmp',
+    dependencies = {
+      'hrsh7th/cmp-path',
+      'L3MON4D3/LuaSnip',
+    },
+    event = 'BufReadPost',
+    config = function()
+        local cmp = require('cmp')
+        cmp.setup({
+          completion = { completeopt = 'menu,menuone,noinsert' },
+          mapping = cmp.mapping.preset.insert({
+            ['<C-n>'] = cmp.mapping.select_next_item(),
+            ['<C-p>'] = cmp.mapping.select_prev_item(),
+            --['<Tab>'] = cmp.mapping.select_next_item(),
+            --['<S-Tab>'] = cmp.mapping.select_prev_item(),
+            ['<C-b>'] = cmp.mapping.scroll_docs(-4),
+            ['<C-f>'] = cmp.mapping.scroll_docs(4),
+            ['<C-Space>'] = cmp.mapping.complete(),
+            ['<C-e>'] = cmp.mapping.abort(),
+            ['<CR>'] = cmp.mapping.confirm({ select = true }), -- Accept currently selected item. Set `select` to `false` to only confirm explicitly selected items.
+            -- ['<C-y>'] = cmp.mapping.confirm { select = true },
+          }),
+          sources = {
+            {
+              name = 'lazydev',
+              -- set group index to 0 to skip loading LuaLS completions as lazydev recommends it
+              group_index = 0,
+            },
+            { name = 'nvim_lsp' },
+            { name = 'path' },
+          },
+          snippet = {
+            expand = function(args)
+              require('luasnip').lsp_expand(args.body)
+            end,
+          },
+        })
+    end
+  },
+  {
     'neovim/nvim-lspconfig',
     -- event = "BufReadPost",
     enabled = false,
     lazy = false,
-    -- ft = { "go", "python" },
+    ft = { "go", "python" },
     version = "*",
     dependencies = {
       { 'williamboman/mason.nvim', config = true },
@@ -240,6 +280,7 @@ require('lazy').setup({
       'hrsh7th/cmp-nvim-lsp',
       'hrsh7th/nvim-cmp',
       'hrsh7th/cmp-path',
+      'L3MON4D3/LuaSnip',
     },
     config = function()
       vim.api.nvim_create_autocmd('LspAttach', {
@@ -351,24 +392,21 @@ require('lazy').setup({
         },
       }
 
-      local cmp = require 'cmp'
+      local cmp = require('cmp')
 
-      cmp.setup {
+      cmp.setup({
         completion = { completeopt = 'menu,menuone,noinsert' },
-
-        mapping = cmp.mapping.preset.insert {
+        mapping = cmp.mapping.preset.insert({
           ['<C-n>'] = cmp.mapping.select_next_item(),
           ['<C-p>'] = cmp.mapping.select_prev_item(),
           --['<Tab>'] = cmp.mapping.select_next_item(),
           --['<S-Tab>'] = cmp.mapping.select_prev_item(),
-
           ['<C-b>'] = cmp.mapping.scroll_docs(-4),
           ['<C-f>'] = cmp.mapping.scroll_docs(4),
-
+          ['<C-Space>'] = cmp.mapping.complete(),
+          ['<C-e>'] = cmp.mapping.abort(),
+          ['<CR>'] = cmp.mapping.confirm({ select = true }), -- Accept currently selected item. Set `select` to `false` to only confirm explicitly selected items.
           -- ['<C-y>'] = cmp.mapping.confirm { select = true },
-          ['<CR>'] = cmp.mapping.confirm { select = true },
-
-          ['<C-Space>'] = cmp.mapping.complete {},
 
           -- Think of <c-l> as moving to the right of your snippet expansion.
           --  So if you have a snippet that's like:
@@ -378,7 +416,7 @@ require('lazy').setup({
           --
           -- <c-l> will move you to the right of each of the expansion locations.
           -- <c-h> is similar, except moving you backwards.
-        },
+        }),
         sources = {
           {
             name = 'lazydev',
@@ -393,7 +431,7 @@ require('lazy').setup({
             require('luasnip').lsp_expand(args.body)
           end,
         },
-      }
+      })
     end,
   },
   {
