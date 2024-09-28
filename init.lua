@@ -1,6 +1,6 @@
 vim.g.mapleader = ' '
 vim.g.maplocalleader = ' '
-vim.g.have_nerd_font = true
+vim.g.have_nerd_font = false
 vim.opt.number = true
 vim.opt.relativenumber = true
 vim.opt.mouse = 'a'
@@ -8,29 +8,25 @@ vim.opt.showmode = false
 vim.schedule(function()
   vim.opt.clipboard = 'unnamedplus'
 end)
-vim.opt.breakindent = true
 vim.opt.undofile = true
 vim.opt.ignorecase = true
 vim.opt.smartcase = true
 vim.opt.hlsearch = true
 vim.opt.incsearch = true
-vim.opt.signcolumn = 'yes'
+vim.opt.signcolumn = 'yes:2'
 vim.opt.updatetime = 250
 vim.opt.timeoutlen = 300
-vim.opt.splitright = true
 vim.opt.splitbelow = true
 vim.opt.list = true
 vim.opt.listchars = { tab = '» ', trail = '·', nbsp = '␣' }
 vim.opt.inccommand = 'split'
-vim.opt.cursorline = true
 vim.opt.scrolloff = 10
 vim.opt.softtabstop = 4
 vim.opt.shiftwidth = 4
 vim.opt.tabstop = 4
-vim.opt.expandtab = true
 vim.opt.smartindent = true
 vim.opt.wrap = false
-vim.cmd.colorscheme 'habamax'
+-- vim.cmd.colorscheme 'habamax'
 
 vim.keymap.set('n', '<Esc>', '<cmd>nohlsearch<CR>')
 vim.keymap.set('x', '<leader>p', '"_dP')
@@ -39,7 +35,7 @@ vim.keymap.set('x', '<ALT-k>', 'ddkp')
 
 vim.api.nvim_create_autocmd('TextYankPost', {
   desc = 'Highlight when yanking (copying) text',
-  group = vim.api.nvim_create_augroup('kickstart-highlight-yank', { clear = true }),
+  group = vim.api.nvim_create_augroup('highlight-yank', { clear = true }),
   callback = function()
     vim.highlight.on_yank()
   end,
@@ -49,7 +45,7 @@ vim.api.nvim_create_autocmd("BufWritePre", {
   pattern = "*.go",
   callback = function()
     local params = vim.lsp.util.make_range_params()
-    params.context = {only = {"source.organizeImports"}}
+    params.context = { only = { "source.organizeImports" } }
     -- buf_request_sync defaults to a 1000ms timeout. Depending on your
     -- machine and codebase, you may want longer. Add an additional
     -- argument after params if you find that you have to write the file
@@ -64,7 +60,7 @@ vim.api.nvim_create_autocmd("BufWritePre", {
         end
       end
     end
-    vim.lsp.buf.format({async = false})
+    vim.lsp.buf.format({ async = false })
   end
 })
 
@@ -83,34 +79,32 @@ vim.keymap.set('n', '<leader>lh', require('lazy').home, { desc = '[L]azy [H]ome'
 vim.keymap.set('n', '<leader>lc', require('lazy').check, { desc = '[L]azy [C]heck' })
 vim.keymap.set('n', '<leader>lx', require('lazy').clean, { desc = '[L]azy Clean [X]' })
 vim.keymap.set('n', '<leader>ls', require('lazy').sync, { desc = '[L]azy [S]ync' })
-vim.keymap.set('n', '<leader>lu', require('lazy').sync, { desc = '[L]azy [U]pdate' })
+vim.keymap.set('n', '<leader>lu', require('lazy').update, { desc = '[L]azy [U]pdate' })
 
 require('lazy').setup({
   {
     'goolord/alpha-nvim',
     lazy = false,
     dependencies = { 'nvim-tree/nvim-web-devicons' },
-    config = function ()
-      require'alpha'.setup(require'alpha.themes.startify'.config)
+    config = function()
+      require('alpha').setup(require 'alpha.themes.startify'.config)
     end
   },
   {
     'echasnovski/mini.nvim',
     version = '*',
-    lazy = false,
     config = function()
       require('mini.ai').setup({ n_lines = 500 })
       require('mini.surround').setup()
       require('mini.pairs').setup()
       require('mini.move').setup()
-      local statusline = require 'mini.statusline'
-      statusline.setup { use_icons = vim.g.have_nerd_font }
+      require('mini.statusline').setup({ use_icons = vim.g.have_nerd_font })
       require('mini.git').setup()
     end,
   },
   {
     'folke/which-key.nvim',
-    version = '3.*',
+    version = '*',
     event = "VeryLazy",
     opts = {
       preset = "helix",
@@ -150,7 +144,7 @@ require('lazy').setup({
     'nvim-telescope/telescope.nvim',
     cmd = "Telescope",
     lazy = false,
-    branch = '0.1.x',
+    version = '0.1.x',
     dependencies = {
       'nvim-lua/plenary.nvim',
       { 'nvim-tree/nvim-web-devicons', enabled = vim.g.have_nerd_font },
@@ -193,7 +187,7 @@ require('lazy').setup({
       vim.keymap.set('n', '<leader>sd', builtin.diagnostics, { desc = '[S]earch [D]iagnostics' })
       vim.keymap.set('n', '<leader>sr', builtin.resume, { desc = '[S]earch [R]esume' })
       vim.keymap.set('n', '<leader>s.', builtin.oldfiles, { desc = '[S]earch Recent Files ("." for repeat)' })
-      vim.keymap.set('n', '<leader><leader>', builtin.buffers, { desc = '[ ] Find existing buffers' })
+      vim.keymap.set('n', '<leader> ', builtin.buffers, { desc = '[S]earch existing [B]uffers' })
 
       -- Slightly advanced example of overriding default behavior and theme
       vim.keymap.set('n', '<leader>/', function()
@@ -220,71 +214,66 @@ require('lazy').setup({
     end,
   },
   {
-    "L3MON4D3/LuaSnip",
-    event = "BufReadPost",
-    version = "v2.*",
-    -- install jsregexp (optional!).
-    -- build = "make install_jsregexp"
-  },
-  {
     'hrsh7th/nvim-cmp',
     dependencies = {
       'hrsh7th/cmp-path',
-      'L3MON4D3/LuaSnip',
+      {
+        "L3MON4D3/LuaSnip",
+        event = "BufReadPost",
+        version = "v2.*",
+        -- install jsregexp (optional!).
+        -- build = "make install_jsregexp"
+      },
     },
-    event = 'BufReadPost',
+    event = 'InsertEnter',
     config = function()
-        local cmp = require('cmp')
-        cmp.setup({
-          completion = { completeopt = 'menu,menuone,noinsert' },
-          mapping = cmp.mapping.preset.insert({
-            ['<C-n>'] = cmp.mapping.select_next_item(),
-            ['<C-p>'] = cmp.mapping.select_prev_item(),
-            --['<Tab>'] = cmp.mapping.select_next_item(),
-            --['<S-Tab>'] = cmp.mapping.select_prev_item(),
-            ['<C-b>'] = cmp.mapping.scroll_docs(-4),
-            ['<C-f>'] = cmp.mapping.scroll_docs(4),
-            ['<C-Space>'] = cmp.mapping.complete(),
-            ['<C-e>'] = cmp.mapping.abort(),
-            ['<CR>'] = cmp.mapping.confirm({ select = true }), -- Accept currently selected item. Set `select` to `false` to only confirm explicitly selected items.
-            -- ['<C-y>'] = cmp.mapping.confirm { select = true },
-          }),
-          sources = {
-            {
-              name = 'lazydev',
-              -- set group index to 0 to skip loading LuaLS completions as lazydev recommends it
-              group_index = 0,
-            },
-            { name = 'nvim_lsp' },
-            { name = 'path' },
+      local cmp = require('cmp')
+      cmp.setup({
+        completion = { completeopt = 'menu,menuone,noinsert' },
+        mapping = cmp.mapping.preset.insert({
+          ['<C-n>'] = cmp.mapping.select_next_item(),
+          ['<C-p>'] = cmp.mapping.select_prev_item(),
+          --['<Tab>'] = cmp.mapping.select_next_item(),
+          --['<S-Tab>'] = cmp.mapping.select_prev_item(),
+          ['<C-b>'] = cmp.mapping.scroll_docs(-4),
+          ['<C-f>'] = cmp.mapping.scroll_docs(4),
+          ['<C-Space>'] = cmp.mapping.complete(),
+          ['<C-e>'] = cmp.mapping.abort(),
+          ['<CR>'] = cmp.mapping.confirm({ select = true }), -- Accept currently selected item. Set `select` to `false` to only confirm explicitly selected items.
+          -- ['<C-y>'] = cmp.mapping.confirm { select = true },
+        }),
+        sources = {
+          {
+            name = 'lazydev',
+            -- set group index to 0 to skip loading LuaLS completions as lazydev recommends it
+            group_index = 0,
           },
-          snippet = {
-            expand = function(args)
-              require('luasnip').lsp_expand(args.body)
-            end,
-          },
-        })
+          { name = 'nvim_lsp' },
+          { name = 'path' },
+        },
+        snippet = {
+          expand = function(args)
+            require('luasnip').lsp_expand(args.body)
+          end,
+        },
+      })
     end
   },
   {
     'neovim/nvim-lspconfig',
-    -- event = "BufReadPost",
     enabled = false,
-    lazy = false,
-    ft = { "go", "python" },
+    event = "User FilePost",
+    ft = { "go", "python", "lua" },
     version = "*",
     dependencies = {
       { 'williamboman/mason.nvim', config = true },
       'williamboman/mason-lspconfig.nvim',
       'WhoIsSethDaniel/mason-tool-installer.nvim',
       'hrsh7th/cmp-nvim-lsp',
-      'hrsh7th/nvim-cmp',
-      'hrsh7th/cmp-path',
-      'L3MON4D3/LuaSnip',
     },
     config = function()
       vim.api.nvim_create_autocmd('LspAttach', {
-        group = vim.api.nvim_create_augroup('kickstart-lsp-attach', { clear = true }),
+        group = vim.api.nvim_create_augroup('lsp-attach', { clear = true }),
         callback = function(event)
           local map = function(keys, func, desc)
             vim.keymap.set('n', keys, func, { buffer = event.buf, desc = 'LSP: ' .. desc })
@@ -307,7 +296,7 @@ require('lazy').setup({
           -- When you move your cursor, the highlights will be cleared (the second autocommand).
           local client = vim.lsp.get_client_by_id(event.data.client_id)
           if client and client.supports_method(vim.lsp.protocol.Methods.textDocument_documentHighlight) then
-            local highlight_augroup = vim.api.nvim_create_augroup('kickstart-lsp-highlight', { clear = false })
+            local highlight_augroup = vim.api.nvim_create_augroup('lsp-highlight', { clear = false })
             vim.api.nvim_create_autocmd({ 'CursorHold', 'CursorHoldI' }, {
               buffer = event.buf,
               group = highlight_augroup,
@@ -321,10 +310,10 @@ require('lazy').setup({
             })
 
             vim.api.nvim_create_autocmd('LspDetach', {
-              group = vim.api.nvim_create_augroup('kickstart-lsp-detach', { clear = true }),
+              group = vim.api.nvim_create_augroup('lsp-detach', { clear = true }),
               callback = function(event2)
                 vim.lsp.buf.clear_references()
-                vim.api.nvim_clear_autocmds { group = 'kickstart-lsp-highlight', buffer = event2.buf }
+                vim.api.nvim_clear_autocmds { group = 'lsp-highlight', buffer = event2.buf }
               end,
             })
           end
@@ -348,35 +337,53 @@ require('lazy').setup({
       local capabilities = vim.lsp.protocol.make_client_capabilities()
       capabilities = vim.tbl_deep_extend('force', capabilities, require('cmp_nvim_lsp').default_capabilities())
       local servers = {
-        gopls = {
-          -- cmd = { "gopls" },
-          filetypes = { "go", "gomod", "gowork", "gotmpl" },
-          -- root_dir = require("lspconfig.util").root_pattern("go.work", "go.mod", ".git"),
-          settings = {
-            gopls = {
-              gofumpt = true,
-              completeUnimported = true,
-              usePlaceholders = true,
-              analyses = {
-                unusedparams = true,
+        -- gopls = {
+        --   -- cmd = { "gopls" },
+        --   filetypes = { "go", "gomod", "gowork", "gotmpl" },
+        --   -- root_dir = require("lspconfig.util").root_pattern("go.work", "go.mod", ".git"),
+        --   settings = {
+        --     gopls = {
+        --       gofumpt = true,
+        --       completeUnimported = true,
+        --       usePlaceholders = true,
+        --       analyses = {
+        --         unusedparams = true,
+        --       },
+        --     },
+        --   },
+        -- },
+        -- pyright = {
+        --   filetypes = { "python" },
+        --   settings = {
+        --     python = {
+        --       pythonPath = './.venv/bin/python',
+        --     }
+        --   }
+        -- },
+        lua_ls = {
+          Lua = {
+            diagnostics = {
+              globals = { "vim" },
+            },
+            workspace = {
+              library = {
+                vim.fn.expand "$VIMRUNTIME/lua",
+                vim.fn.expand "$VIMRUNTIME/lua/vim/lsp",
+                vim.fn.stdpath "data" .. "/lazy/ui/nvchad_types",
+                vim.fn.stdpath "data" .. "/lazy/lazy.nvim/lua/lazy",
+                "${3rd}/luv/library",
               },
+              maxPreload = 100000,
+              preloadFileSize = 10000,
             },
           },
         },
-        pyright = {
-          filetypes = { "python" },
-          settings = {
-            python = {
-              pythonPath = './.venv/bin/python',
-            }
-          }
-        }
       }
 
       require('mason').setup()
 
       local ensure_installed = vim.tbl_keys(servers or {})
-      vim.list_extend(ensure_installed, { 'tsserver', 'dockerls' })
+      -- vim.list_extend(ensure_installed, { 'ts_ls', 'dockerls' })
       require('mason-tool-installer').setup { ensure_installed = ensure_installed }
 
       require('mason-lspconfig').setup {
@@ -385,59 +392,18 @@ require('lazy').setup({
             local server = servers[server_name] or {}
             -- This handles overriding only values explicitly passed
             -- by the server configuration above. Useful when disabling
-            -- certain features of an LSP (for example, turning off formatting for tsserver)
+            -- certain features of an LSP (for example, turning off formatting for ts_ls)
             server.capabilities = vim.tbl_deep_extend('force', {}, capabilities, server.capabilities or {})
             require('lspconfig')[server_name].setup(server)
           end,
         },
       }
-
-      local cmp = require('cmp')
-
-      cmp.setup({
-        completion = { completeopt = 'menu,menuone,noinsert' },
-        mapping = cmp.mapping.preset.insert({
-          ['<C-n>'] = cmp.mapping.select_next_item(),
-          ['<C-p>'] = cmp.mapping.select_prev_item(),
-          --['<Tab>'] = cmp.mapping.select_next_item(),
-          --['<S-Tab>'] = cmp.mapping.select_prev_item(),
-          ['<C-b>'] = cmp.mapping.scroll_docs(-4),
-          ['<C-f>'] = cmp.mapping.scroll_docs(4),
-          ['<C-Space>'] = cmp.mapping.complete(),
-          ['<C-e>'] = cmp.mapping.abort(),
-          ['<CR>'] = cmp.mapping.confirm({ select = true }), -- Accept currently selected item. Set `select` to `false` to only confirm explicitly selected items.
-          -- ['<C-y>'] = cmp.mapping.confirm { select = true },
-
-          -- Think of <c-l> as moving to the right of your snippet expansion.
-          --  So if you have a snippet that's like:
-          --  function $name($args)
-          --    $body
-          --  end
-          --
-          -- <c-l> will move you to the right of each of the expansion locations.
-          -- <c-h> is similar, except moving you backwards.
-        }),
-        sources = {
-          {
-            name = 'lazydev',
-            -- set group index to 0 to skip loading LuaLS completions as lazydev recommends it
-            group_index = 0,
-          },
-          { name = 'nvim_lsp' },
-          { name = 'path' },
-        },
-        snippet = {
-          expand = function(args)
-            require('luasnip').lsp_expand(args.body)
-          end,
-        },
-      })
     end,
   },
   {
     'stevearc/conform.nvim',
-    enabled = false,
-    version = "7.*.*",
+    version = "*",
+    ft = { "python", "lua" },
     event = 'BufWritePre',
     cmd = 'ConformInfo',
     keys = {
@@ -464,6 +430,7 @@ require('lazy').setup({
       end,
       formatters_by_ft = {
         python = { "ruff" },
+        lua = { "stylya" },
         -- You can use 'stop_after_first' to run the first available formatter from the list
         -- javascript = { "prettierd", "prettier", stop_after_first = true },
       },
@@ -479,9 +446,6 @@ require('lazy').setup({
     },
     opts = {
       ensure_installed = {
-        'bash',
-        'make',
-        'editorconfig',
         'html',
         'lua',
         'markdown',
@@ -490,13 +454,18 @@ require('lazy').setup({
         'json', 'jsonc',
         'yaml',
         'dockerfile',
-        'xml',
-        'query',
-        'gitignore',
       },
+      sync_install = true,
       auto_install = true,
       highlight = {
         enable = true,
+        disable = function(lang, buf)
+            local max_filesize = 100 * 1024 -- 100 KB
+            local ok, stats = pcall(vim.loop.fs_stat, vim.api.nvim_buf_get_name(buf))
+            if ok and stats and stats.size > max_filesize then
+                return true
+            end
+        end,  
       },
       indent = { enable = true },
     },
@@ -507,29 +476,30 @@ require('lazy').setup({
   },
   {
     "mbbill/undotree",
-    config = function ()
+    event = 'BufReadPost',
+    config = function()
       vim.keymap.set('n', '<leader>tu', vim.cmd.UndotreeToggle, { desc = '[T]oggle [U]ndotree' })
     end
   },
 }, {
-    defaults = { lazy = true },
-    ui = {
-      icons = vim.g.have_nerd_font and {} or {
-        cmd = '⌘',
-        config = '🛠',
-        event = '📅',
-        ft = '📂',
-        init = '⚙',
-        keys = '🗝',
-        plugin = '🔌',
-        runtime = '💻',
-        require = '🌙',
-        source = '📄',
-        start = '🚀',
-        task = '📌',
-        lazy = '💤',
-      },
+  defaults = { lazy = true, version = '*' },
+  ui = {
+    icons = vim.g.have_nerd_font and {} or {
+      cmd = '⌘',
+      config = '🛠',
+      event = '📅',
+      ft = '📂',
+      init = '⚙',
+      keys = '🗝',
+      plugin = '🔌',
+      runtime = '💻',
+      require = '🌙',
+      source = '📄',
+      start = '🚀',
+      task = '📌',
+      lazy = '💤',
     },
-  })
+  },
+})
 
 -- vim: ts=2 sts=2 sw=2 et
