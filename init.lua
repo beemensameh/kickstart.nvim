@@ -1,38 +1,53 @@
+-- globle
 vim.g.mapleader = ' '
 vim.g.maplocalleader = ' '
 vim.g.have_nerd_font = false
-vim.opt.number = true
-vim.opt.relativenumber = true
-vim.opt.mouse = 'a'
-vim.opt.showmode = false
+
+vim.opt.undofile = true
 vim.schedule(function()
   vim.opt.clipboard = 'unnamedplus'
 end)
-vim.opt.undofile = true
+
+-- UI
+vim.opt.mouse = 'a'
+vim.opt.showmode = false
+vim.opt.splitbelow = true
+vim.opt.listchars = { tab = '» ', trail = '·', nbsp = '␣' }
+vim.opt.scrolloff = 10
+vim.cmd.colorscheme('habamax')
+vim.opt.list = true
+
+-- numbers
+vim.opt.number = true
+vim.opt.relativenumber = true
+vim.opt.signcolumn = 'yes:2'
+
+-- search
 vim.opt.ignorecase = true
 vim.opt.smartcase = true
 vim.opt.hlsearch = true
 vim.opt.incsearch = true
-vim.opt.signcolumn = 'yes:2'
-vim.opt.updatetime = 250
-vim.opt.timeoutlen = 300
-vim.opt.splitbelow = true
-vim.opt.list = true
-vim.opt.listchars = { tab = '» ', trail = '·', nbsp = '␣' }
-vim.opt.inccommand = 'split'
-vim.opt.scrolloff = 10
+
+-- edit
 vim.opt.softtabstop = 4
 vim.opt.shiftwidth = 4
 vim.opt.tabstop = 4
 vim.opt.smartindent = true
 vim.opt.wrap = false
--- vim.cmd.colorscheme 'habamax'
 
+-- performance
+vim.opt.updatetime = 250
+vim.opt.timeoutlen = 300
+
+-- keymap
 vim.keymap.set('n', '<Esc>', '<cmd>nohlsearch<CR>')
+-- past without remove yank buffer
 vim.keymap.set('x', '<leader>p', '"_dP')
+-- move line up and down
 vim.keymap.set('x', '<ALT-j>', 'ddjp')
 vim.keymap.set('x', '<ALT-k>', 'ddkp')
 
+-- autocmd
 vim.api.nvim_create_autocmd('TextYankPost', {
   desc = 'Highlight when yanking (copying) text',
   group = vim.api.nvim_create_augroup('highlight-yank', { clear = true }),
@@ -91,7 +106,7 @@ require('lazy').setup({
   {
     'goolord/alpha-nvim',
     lazy = false,
-    dependencies = { 'nvim-tree/nvim-web-devicons' },
+    dependencies = { 'nvim-tree/nvim-web-devicons', enabled = vim.g.have_nerd_font },
     config = function()
       require('alpha').setup(require 'alpha.themes.startify'.config)
     end
