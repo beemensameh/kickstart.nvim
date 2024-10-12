@@ -282,9 +282,7 @@ require('lazy').setup({
   },
   {
     'neovim/nvim-lspconfig',
-    enabled = false,
-    event = "User FilePost",
-    ft = { "go", "python", "lua" },
+    ft = { "go", "python", "lua", "dockerfile" },
     version = "*",
     dependencies = {
       { 'williamboman/mason.nvim', config = true },
@@ -359,9 +357,6 @@ require('lazy').setup({
       capabilities = vim.tbl_deep_extend('force', capabilities, require('cmp_nvim_lsp').default_capabilities())
       local servers = {
         -- gopls = {
-        --   -- cmd = { "gopls" },
-        --   filetypes = { "go", "gomod", "gowork", "gotmpl" },
-        --   -- root_dir = require("lspconfig.util").root_pattern("go.work", "go.mod", ".git"),
         --   settings = {
         --     gopls = {
         --       gofumpt = true,
@@ -413,7 +408,7 @@ require('lazy').setup({
       require('mason').setup()
 
       local ensure_installed = vim.tbl_keys(servers or {})
-      -- vim.list_extend(ensure_installed, { 'ts_ls', 'dockerls' })
+      vim.list_extend(ensure_installed, { 'dockerls' })
       require('mason-tool-installer').setup { ensure_installed = ensure_installed }
 
       require('mason-lspconfig').setup {
