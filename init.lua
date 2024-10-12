@@ -235,49 +235,77 @@ require('lazy').setup({
     end,
   },
   {
-    'hrsh7th/nvim-cmp',
+    'mfussenegger/nvim-dap',
+    enabled = false,
+    lazy = false,
+    version = "*",
     dependencies = {
-      'hrsh7th/cmp-path',
-      {
-        "L3MON4D3/LuaSnip",
-        event = "BufReadPost",
-        version = "v2.*",
-        -- install jsregexp (optional!).
-        -- build = "make install_jsregexp"
-      },
+      -- { 'williamboman/mason.nvim', config = true },
+      -- "jay-babu/mason-nvim-dap.nvim",
+      'rcarriga/nvim-dap-ui',
+      'nvim-neotest/nvim-nio',
     },
-    event = 'InsertEnter',
-    config = function()
-      local cmp = require('cmp')
-      cmp.setup({
-        completion = { completeopt = 'menu,menuone,noinsert' },
-        mapping = cmp.mapping.preset.insert({
-          ['<C-n>'] = cmp.mapping.select_next_item(),
-          ['<C-p>'] = cmp.mapping.select_prev_item(),
-          --['<Tab>'] = cmp.mapping.select_next_item(),
-          --['<S-Tab>'] = cmp.mapping.select_prev_item(),
-          ['<C-b>'] = cmp.mapping.scroll_docs(-4),
-          ['<C-f>'] = cmp.mapping.scroll_docs(4),
-          ['<C-Space>'] = cmp.mapping.complete(),
-          ['<C-e>'] = cmp.mapping.abort(),
-          ['<CR>'] = cmp.mapping.confirm({ select = true }), -- Accept currently selected item. Set `select` to `false` to only confirm explicitly selected items.
-          -- ['<C-y>'] = cmp.mapping.confirm { select = true },
-        }),
-        sources = {
-          {
-            name = 'lazydev',
-            -- set group index to 0 to skip loading LuaLS completions as lazydev recommends it
-            group_index = 0,
-          },
-          { name = 'nvim_lsp' },
-          { name = 'path' },
+    config = function(_, opt)
+      local dap = require('dap')
+      local dap_ui = require("dapui")
+      dap_ui.setup(opt)
+
+      dap.adapters.delve = function(callback, config)
+        if config.mode == 'remote' and config.request == 'attach' then
+          callback({
+            type = 'server',
+            host = config.host or '127.0.0.1',
+            port = config.port or '38697'
+          })
+        else
+          callback({
+            type = 'server',
+            port = '${port}',
+            executable = {
+              command = 'dlv',
+              args = { 'dap', '-l', '127.0.0.1:${port}', '--log', '--log-output=dap' },
+              detached = vim.fn.has("win32") == 0,
+            }
+          })
+        end
+      end
+
+      dap.configurations.go = {
+        {
+          type = "delve",
+          name = "Debug",
+          request = "launch",
+          program = "${file}"
         },
-        snippet = {
-          expand = function(args)
-            require('luasnip').lsp_expand(args.body)
-          end,
+        {
+          type = "delve",
+          name = "Debug test", -- configuration for debugging test files
+          request = "launch",
+          mode = "test",
+          program = "${file}"
         },
-      })
+        -- works with go.mod packages and sub packages
+        {
+          type = "delve",
+          name = "Debug test (go.mod)",
+          request = "launch",
+          mode = "test",
+          program = "./${relativeFileDirname}"
+        }
+      }
+
+      -- dap.listeners.after.event_initialized["dapui_config"] = function()
+      --   dap_ui.open()
+      -- end
+      -- dap.listeners.after.event_terminated["dapui_config"] = function()
+      --   dap_ui.close()
+      -- end
+      -- dap.listeners.before.event_exited["dapui_config"] = function()
+      --   require("dapui").close()
+      -- end
+      vim.keymap.set('n', '<leader>db', dap.toggle_breakpoint, { desc = "[D]ap Toggle [B]reakpoint" })
+      vim.keymap.set('n', '<leader><f5>', dap.continue, { desc = "[D]ap [S]tart or continue" })
+      vim.keymap.set('n', '<leader>dt', dap_ui.toggle, { desc = "[D]ap UI [T]oggle" })
     end
   },
   {
@@ -288,7 +316,16 @@ require('lazy').setup({
       { 'williamboman/mason.nvim', config = true },
       'williamboman/mason-lspconfig.nvim',
       'WhoIsSethDaniel/mason-tool-installer.nvim',
+      'hrsh7th/nvim-cmp',
+      {
+        "L3MON4D3/LuaSnip",
+        event = "BufReadPost",
+        version = "v2.*",
+        -- install jsregexp (optional!).
+        -- build = "make install_jsregexp"
+      },
       'hrsh7th/cmp-nvim-lsp',
+      'hrsh7th/cmp-path',
     },
     config = function()
       vim.api.nvim_create_autocmd('LspAttach', {
@@ -387,11 +424,6 @@ require('lazy').setup({
               },
               workspace = {
                 library = {
-                  vim.fn.expand "$VIMRUNTIME/lua",
-                  vim.fn.expand "$VIMRUNTIME/lua/vim/lsp",
-                  vim.fn.stdpath "data" .. "/lazy/ui/nvchad_types",
-                  vim.fn.stdpath "data" .. "/lazy/lazy.nvim/lua/lazy",
-                  "${3rd}/luv/library",
                   vim.api.nvim_get_runtime_file("", true),
                 },
                 telemetry = {
@@ -408,7 +440,7 @@ require('lazy').setup({
       require('mason').setup()
 
       local ensure_installed = vim.tbl_keys(servers or {})
-      vim.list_extend(ensure_installed, { 'dockerls' })
+      vim.list_extend(ensure_installed, { 'stylua', 'dockerls' })
       require('mason-tool-installer').setup { ensure_installed = ensure_installed }
 
       require('mason-lspconfig').setup {
@@ -423,6 +455,37 @@ require('lazy').setup({
           end,
         },
       }
+
+      local cmp = require('cmp')
+      cmp.setup({
+        completion = { completeopt = 'menu,menuone,noinsert' },
+        mapping = cmp.mapping.preset.insert({
+          ['<C-n>'] = cmp.mapping.select_next_item(),
+          ['<C-p>'] = cmp.mapping.select_prev_item(),
+          --['<Tab>'] = cmp.mapping.select_next_item(),
+          --['<S-Tab>'] = cmp.mapping.select_prev_item(),
+          ['<C-b>'] = cmp.mapping.scroll_docs(-4),
+          ['<C-f>'] = cmp.mapping.scroll_docs(4),
+          ['<C-Space>'] = cmp.mapping.complete(),
+          ['<C-e>'] = cmp.mapping.abort(),
+          ['<CR>'] = cmp.mapping.confirm({ select = true }), -- Accept currently selected item. Set `select` to `false` to only confirm explicitly selected items.
+          -- ['<C-y>'] = cmp.mapping.confirm { select = true },
+        }),
+        sources = {
+          {
+            name = 'lazydev',
+            -- set group index to 0 to skip loading LuaLS completions as lazydev recommends it
+            group_index = 0,
+          },
+          { name = 'nvim_lsp' },
+          { name = 'path' },
+        },
+        snippet = {
+          expand = function(args)
+            require('luasnip').lsp_expand(args.body)
+          end,
+        },
+      })
     end,
   },
   {
