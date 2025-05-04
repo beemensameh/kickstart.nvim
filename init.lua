@@ -405,6 +405,7 @@ require('lazy').setup({
         --     },
         --   },
         -- },
+        -- -- Instal node https://nodejs.org/en/download/
         -- pyright = {
         --   filetypes = { "python" },
         --   settings = {
