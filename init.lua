@@ -16,6 +16,7 @@ vim.opt.listchars = { tab = '» ', trail = '·', nbsp = '␣' }
 vim.opt.scrolloff = 10
 vim.cmd.colorscheme('habamax')
 vim.opt.list = true
+vim.opt.splitright = true
 
 -- numbers
 vim.opt.number = true
