@@ -12,6 +12,7 @@ vim.opt.splitbelow = true
 vim.opt.splitright = true
 vim.opt.list = true
 vim.opt.scrolloff = 10
+vim.cmd.colorscheme('zellner')
 
 -- numbers
 vim.opt.number = true
@@ -37,15 +38,14 @@ vim.diagnostic.config({
 -- keymap
 vim.keymap.set('n', '<Esc>', '<cmd>nohlsearch<CR>')
 -- replace without remove yank buffer
-vim.keymap.set('x', '<leader>p', '"_dP')
+vim.keymap.set({ 'v', 'x' }, '<leader>p', '"_dP')
 -- move lines up and down
-vim.keymap.set('n', '<A-j>', 'ddjP')
-vim.keymap.set('n', '<A-k>', 'ddkP')
+-- vim.keymap.set('n', '<A-j>', 'ddjP')
+-- vim.keymap.set('n', '<A-k>', 'ddkP')
 -- termianl keymap
 vim.keymap.set('n', '<leader>tt', '<cmd>:split term://bash<CR>', { desc = '[T]oggle [T]erminal', silent = true })
 vim.keymap.set('t', '<Esc>', [[<C-\><C-n>]], { desc = 'Exit terminal mode' })
 
-vim.keymap.set('n', '<leader>e', vim.cmd.Ex, { desc = 'Back to explorer' })
 
 -- autocmd
 vim.api.nvim_create_autocmd('TextYankPost', {
@@ -84,7 +84,7 @@ vim.keymap.set('n', '<leader>lu', require('lazy').update, { desc = '[L]azy [U]pd
 vim.api.nvim_create_autocmd("BufWritePre", {
   pattern = "*.go",
   callback = function()
-    local params = vim.lsp.util.make_range_params(0, "uft-16")
+    local params = vim.lsp.util.make_range_params(0, "utf-8")
     params.context = { only = { "source.organizeImports" } }
     -- buf_request_sync defaults to a 1000ms timeout. Depending on your
     -- machine and codebase, you may want longer. Add an additional
@@ -104,7 +104,6 @@ vim.api.nvim_create_autocmd("BufWritePre", {
   end
 })
 
---
 local plugins = {
   {
     "catppuccin/nvim",
@@ -172,7 +171,7 @@ local plugins = {
       vim.keymap.set('n', '<leader>sc', builtin.commands, { desc = '[S]earch plugin/user [C]ommands' })
       vim.keymap.set('n', '<leader>sg', builtin.live_grep, { desc = '[S]earch by [G]rep workspace files' })
       vim.keymap.set('n', '<leader>sd', builtin.diagnostics, { desc = '[S]earch [D]iagnostics' })
-      vim.keymap.set('n', '<leader> ', builtin.buffers, { desc = '[ ]Search opened files' })
+      vim.keymap.set('n', '<leader>so', builtin.buffers, { desc = '[S]earch [O]pened files' })
       vim.keymap.set('n', '<leader>sw', builtin.current_buffer_fuzzy_find,
         { desc = '[w] Fuzzily search in current file' })
 
@@ -245,17 +244,16 @@ local plugins = {
         delete_to_trash = true,
         use_default_keymaps = true,
       })
-      vim.keymap.set("n", "<leader>.", "<CMD>Oil<CR>", { desc = "Open parent directory" })
+      vim.keymap.set("n", "<leader>e", "<CMD>Oil<CR>", { desc = "Back to explorer" })
     end
   },
   {
     "matze/vim-move",
-    enabled = false,
     event = { "BufReadPost", "BufNewFile" },
   },
   {
     "neovim/nvim-lspconfig",
-    ft = { 'go', 'gomod', 'gowork', 'gotmpl', 'python', 'lua', 'dockerfile' },
+    ft = { 'go', 'gomod', 'gowork', 'gotmpl', 'python', 'lua', 'dockerfile', 'yaml' },
     version = "*",
     dependencies = {
       { 'mason-org/mason.nvim', config = true },
@@ -353,17 +351,24 @@ local plugins = {
         },
         lua_ls = {
           -- Command and arguments to start the server.
-          cmd = { 'lua-language-server' },
+          cmd = { "lua-language-server" },
           -- Filetypes to automatically attach to.
           filetypes = { 'lua' },
           -- Sets the "workspace" to the directory where any of these files is found.
           -- Files that share a root directory will reuse the LSP server connection.
           -- Nested lists indicate equal priority, see |vim.lsp.Config|.
-          root_markers = { { '.luarc.json', '.luarc.jsonc' }, '.git' },
+          root_markers = { { ".emmyrc.json", ".luarc.json", ".luarc.jsonc" }, { ".luacheckrc", ".stylua.toml", "stylua.toml", "selene.toml", "selene.yml" }, { ".git" } },
           -- Specific settings to send to the server. The schema is server-defined.
           -- Example: https://raw.githubusercontent.com/LuaLS/vscode-lua/master/setting/schema.json
           settings = {
             Lua = {
+              codeLens = {
+                enable = true
+              },
+              hint = {
+                enable = true,
+                semicolon = "Disable"
+              },
               runtime = {
                 version = "LuaJIT"
               },
@@ -383,8 +388,10 @@ local plugins = {
             },
           },
         },
-        stylua = nil,
-        dockerls = nil,
+        golangci_lint_ls = {},
+        docker_language_server = {},
+        -- stylua = {},
+        -- dockerls = {},
       }
 
       require('mason').setup({
@@ -399,7 +406,7 @@ local plugins = {
 
       vim.lsp.config("*", { capabilities = capabilities })
       for key, value in pairs(servers or {}) do
-        if value ~= nil then
+        if next(value) ~= nil then
           vim.lsp.config(key, value)
         end
         vim.lsp.enable(key)
@@ -472,6 +479,32 @@ local plugins = {
       },
     },
   },
+  {
+    'nvim-treesitter/nvim-treesitter',
+    enabled = false,
+    lazy = false,
+    event = { "BufReadPost", "BufNewFile" },
+    -- cmd = { "TSInstall", "TSBufEnable", "TSBufDisable", "TSModuleInfo" },
+    build = ':TSUpdate',
+    dependencies = { 'nvim-treesitter/nvim-treesitter-context' },
+    config = function()
+      local ensure_installed = {
+        'html',
+        'lua',
+        'markdown',
+        'go', 'gomod', 'gosum', 'gotmpl', 'gowork',
+        'python',
+        'json', 'jsonc',
+        'yaml',
+        'dockerfile',
+      }
+      require('nvim-treesitter').install(ensure_installed)
+      vim.api.nvim_create_autocmd('FileType', {
+        pattern = { '<filetype>' },
+        callback = function() vim.treesitter.start() end,
+      })
+    end,
+  },
 }
 
 local opts = {
@@ -492,6 +525,9 @@ local opts = {
       task = '📌',
       lazy = '💤',
     },
+  },
+  rocks = {
+    enabled = false,
   },
 }
 
@@ -607,5 +643,11 @@ vim.api.nvim_create_autocmd({ "WinLeave", "BufLeave" }, {
     vim.opt_local.statusline = "%!v:lua.Statusline.inactive()"
   end,
 })
+
+-- disable the
+local ok, _ = pcall(require, "oil")
+if ok == false then
+  vim.keymap.set('n', '<leader>e', vim.cmd.Ex, { desc = 'Back to explorer' })
+end
 
 -- vim: set ft=lua ts=2 sts=2 sw=2 et:
